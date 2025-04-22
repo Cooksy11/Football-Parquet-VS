@@ -1,33 +1,35 @@
-import pandas as pd
-import requests
-from io import BytesIO
-
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import requests
 from io import BytesIO
-import matplotlib.pyplot as plt
-from datetime import datetime
 from fpdf import FPDF
 import tempfile
+from datetime import datetime
 
 st.set_page_config(layout="wide")
 
-st.sidebar.header("Filters")
+# Debug logs
+st.write("🔄 Loading Parquet file...")
 
-# --- Load Data from Google Drive link --- #
 @st.cache_data
-
 def load_data():
-    file_id = "1IBvy-k0yCDKMynfRTQzXJAoWJpRhFPKk"
-    download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    response = requests.get(download_url)
-    response.raise_for_status()
-    df = pd.read_parquet(BytesIO(response.content))
-    df['EVENT_START_TIMESTAMP'] = pd.to_datetime(df['EVENT_START_TIMESTAMP'], errors='coerce')
-    return df.dropna(subset=['EVENT_START_TIMESTAMP'])
-
+    try:
+        file_id = "1IBvy-k0yCDKMynfRTQzXJAoWJpRhFPKk"
+        url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        response = requests.get(url)
+        response.raise_for_status()
+        st.write("✅ File downloaded.")
+        df = pd.read_parquet(BytesIO(response.content))
+        st.write("✅ Parquet loaded:", df.shape)
+        df['EVENT_START_TIMESTAMP'] = pd.to_datetime(df['EVENT_START_TIMESTAMP'], errors='coerce')
+        st.write("🗓️ Datetime parsing completed.")
+        return df.dropna(subset=['EVENT_START_TIMESTAMP'])
+    except Exception as e:
+        st.error(f"❌ Failed to load data: {e}")
+        raise
+    
 df = load_data()
 
 # --- Expectancy Options --- #
