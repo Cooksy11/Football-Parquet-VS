@@ -4,4 +4,4 @@ numpy
 streamlit
 requests
 pyarrow
-
+fpdf
